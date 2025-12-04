@@ -125,10 +125,10 @@ df["part"]   = ["y" if absent[i] > ab_mean else "n" for i in range(0, len(y))]
 # participance, calculated by whether its absence exceeds the mean of the population.
 
 df["med_sp"]   = ["y" if medu[i] > medu_mean else "n" for i in range(0, len(y))]
-# mothoer's silver spoon, calculated by whether its mother's education exceeds the mean of the population.
+# mother's speciality, calculated by whether its mother's education exceeds the mean of the population.
 df["fed_sp"]   = ["y" if fedu[i] > fedu_mean else "n" for i in range(0, len(y))]
-# father's silver spoon, calculated by whether its mother's education exceeds the mean of the population.
-df["slf_ctrl"] = ["y" if go[i] > go_mean else "n" for i in range(0, len(y))]
+# father's speciality, calculated by whether its father's education exceeds the mean of the population.
+df["slf_ctrl"] = ["y" if go[i] < go_mean else "n" for i in range(0, len(y))]
 # self_control, calculated by whether its time to go out exceeds the mean of the population.
 
 ## name for identical group
