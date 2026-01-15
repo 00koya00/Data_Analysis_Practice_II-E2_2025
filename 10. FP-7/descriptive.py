@@ -8,14 +8,12 @@ import pandas as pd
 from scipy.stats import pearsonr
 import scipy.stats as st
 import sympy
-from sklearn.datasets import load_iris
-import scipy.stats as st
 import parse_data as pdata
 import statistics
 import math
 from sklearn.model_selection import train_test_split
-
-
+from sklearn import preprocessing
+from sklearn.tree import DecisionTreeClassifier
 
 def display_title(s, pref='Figure', num=1, center=False):
     ctag = 'center' if center else 'p'
@@ -46,7 +44,8 @@ def dispersion(x, print_output=True):
 
 def display_central_tendency_table(num=1):
     display_title('Central tendency summary statistics.', pref='Table', num=num, center=False)
-    df_numeric = df.select_dtypes(include='number')    
+    df_numeric = df.select_dtypes(include='number')
+    df_numeric = df_numeric.drop('pf', axis=1)
     df_central = df_numeric.apply(lambda x: central(x), axis=0)
     round_dict = 3
     df_central = df_central.round( round_dict )
@@ -57,6 +56,7 @@ def display_central_tendency_table(num=1):
 def display_dispersion_table(num=1):
     display_title('Dispersion summary statistics.', pref='Table', num=num, center=False)
     df_numeric = df.select_dtypes(include='number')
+    df_numeric = df_numeric.drop('pf', axis=1)
     round_dict            = 3
     df_dispersion         = df_numeric.apply(lambda x: dispersion(x), axis=0).round( round_dict )
     row_labels_dispersion = 'st.dev.', 'min', 'max', 'range', '25th', '75th', 'IQR'
@@ -85,12 +85,20 @@ def color_positive_green(val):
 def expand_code(code):
     return "_".join(list(code))
 
+def color_cells(val):
+    if abs(val) > 0.5:
+        color = 'background-color: salmon'
+    elif abs(val) > 0.25:
+        color = 'background-color: lightgreen'
+    else:
+        color = 'background-color: grey'
+    return color
+
 ## Setting variables
 
 df = pdata.df
 
 y    = df['Grade']
-
 age  = df['age']
 medu = df['Medu']
 fedu = df['Fedu']
@@ -103,8 +111,9 @@ absent =df['absences']
 
 columns=df.columns
 
-xlabels= 'Age', "Mother's education", "Father's education", 'Travel time', 'Study time', 'Failures', 'Freetime', 'Go out', 'Absences'  
+xlabels= 'Age', "Mother's education", "Father's education", 'Travel time', 'Study time', 'Failures', 'Freetime', 'Go out', 'Absences'
 
+features= ['age', "Medu", "Fedu", 'travel', 'study', 'failures', 'freetime', 'go_out', 'absences']
 
 ivs    = [age, medu, fedu, ttime, stime, fail, ftime, go, absent]
 colors = [cm.hsv(i/9) for i in range (0,9)]
@@ -134,6 +143,7 @@ df["fed_sp"]   = ["y" if fedu[i] > fedu_mean else "n" for i in range(0, len(y))]
 df["slf_ctrl"] = ["y" if go[i] < go_mean else "n" for i in range(0, len(y))]
 # self_control, calculated by whether its time to go out exceeds the mean of the population.
 
+
 ## name for identical group
 df["group"] = df["dilig"] + "_" + df["exfail"] + "_" + df["part"]
 df["group_2"] = df["med_sp"] + "_" + df["fed_sp"] + "_" + df["slf_ctrl"]
@@ -161,12 +171,16 @@ group_vars = ['group', 'group_2']
 
 ## making test data
 
+# for continuum grade
+
 X = df[numeric_vars]
 y = df["Grade"]
 
 X_train, X_test, y_train, y_test = train_test_split(
     X, y, test_size=0.3, random_state=0
 )
+
+# for category
 
 Xc = df[classif_vars]
 yc = df["pf"]
@@ -175,9 +189,49 @@ Xc_train, Xc_test, yc_train, yc_test = train_test_split(
     Xc, yc, test_size=0.3, random_state=1
 )
 
+# for high-grade prediction
+
+X_train_h, X_test_h, y_train_h, y_test_h = train_test_split(
+    X, y, test_size=0.3, random_state=0
+)
+
+# for low-grade prediction
+
+X_train_l, X_test_l, y_train_l, y_test_l = train_test_split(
+    X, y, test_size=0.3, random_state=0
+)
+
+
+## for improvements
+
+# scaling
+
+xtest_scaled  =pd.DataFrame()
+xtrain_scaled =pd.DataFrame()
+
+scaler_pf = preprocessing.StandardScaler()
+scaler_pf.fit(Xc_train[numeric_vars])
+xtrain_scaled = pd.DataFrame(scaler_pf.transform(Xc_train[numeric_vars]), columns=numeric_vars)
+xtest_scaled  = pd.DataFrame(scaler_pf.transform(Xc_test[numeric_vars]),  columns=numeric_vars)
+
+y_train_pca = yc_train.reset_index(drop=True)
+y_test_pca  = yc_test.reset_index(drop=True)
+
+scaler_hl = preprocessing.StandardScaler()
+scaler_hl.fit(X_train_h[numeric_vars])
+X_train_hl_scaled = scaler_hl.transform(X_train_h[numeric_vars])
+X_test_hl_scaled  = scaler_hl.transform(X_test_h[numeric_vars])
+
+
+y_train_high_pca = (y_train_h >= 15).astype(int).reset_index(drop=True)
+y_test_high_pca  = (y_test_h  >= 15).astype(int).reset_index(drop=True)
+y_train_low_pca = (y_train_l <= 5).astype(int).reset_index(drop=True)
+y_test_low_pca  = (y_test_l  <= 5).astype(int).reset_index(drop=True)
+
 def plot_descriptive():
-    
-    fig,axs = plt.subplots( 3, 3, figsize=(10,10), tight_layout=True )
+
+    display_title('Correlations amongst main variables.', pref='Figure', num=1)
+    fig,axs = plt.subplots( 3, 3, figsize=(10,10), tight_layout=True)
     axx       = [axs[1, 2], axs[2, 2]]
     
     for ax,x,c in zip(axs.ravel(), ivs, colors):
@@ -201,5 +255,3 @@ def plot_descriptive():
     panel_labels = 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i'
     [ax.text(0.92, 0.92, f'({s})', size=12, transform=ax.transAxes)  for ax,s in zip(axs.ravel(), panel_labels)]
     plt.show()
-    
-    display_title('Correlations amongst main variables.', pref='Figure', num=1)
