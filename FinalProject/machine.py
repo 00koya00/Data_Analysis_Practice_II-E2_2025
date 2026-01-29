@@ -1,30 +1,13 @@
-import descriptive as desc
-from IPython.display import display,Markdown #,HTML
-from statsmodels.formula.api import ols
-import statsmodels.api as sm
 import numpy as np
-from scipy import stats
-from matplotlib import pyplot as plt
-import matplotlib.cm as cm
 import pandas as pd
-from scipy.stats import pearsonr
-import scipy.stats as st
-import sympy
-import scipy.stats as st
-from sklearn import neighbors
-from sklearn import svm
-from sklearn.linear_model import LinearRegression
-from sklearn.preprocessing import StandardScaler
-from sklearn.neighbors import KNeighborsClassifier
-from sklearn.metrics import r2_score, mean_squared_error
-from matplotlib.colors import ListedColormap
-from sklearn.neural_network import MLPClassifier
-from sklearn.datasets import make_moons
-from sklearn.model_selection import train_test_split
-from sklearn.metrics import accuracy_score
-from sklearn.tree import DecisionTreeClassifier
-from sklearn.inspection import permutation_importance
+import descriptive as desc
+from matplotlib import pyplot as plt
 from sklearn.pipeline import make_pipeline
+from matplotlib.colors import ListedColormap
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.preprocessing import StandardScaler
+from sklearn.neural_network import MLPClassifier
+
 
 X_2d = desc.Xc_train.iloc[:, [2, 9]]
 X_train_2d = desc.Xc_train.loc[:, ['Medu', 'absences']]

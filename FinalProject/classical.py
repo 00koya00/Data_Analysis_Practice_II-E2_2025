@@ -1,13 +1,6 @@
-import descriptive as desc
-from IPython.display import display,Markdown #,HTML
-from statsmodels.formula.api import ols
 import numpy as np
-from scipy import stats
+import descriptive as desc
 from matplotlib import pyplot as plt
-import matplotlib.cm as cm
-import pandas as pd
-from scipy.stats import pearsonr
-import scipy.stats as st
 
 def First_analysis(num=1):
     about = desc.df.groupby("group")["Grade"].agg(["mean", "std", "count"])

@@ -1,18 +1,12 @@
-
-from IPython.display import display,Markdown #,HTML
-import numpy as np
-from scipy import stats
-from matplotlib import pyplot as plt
-import matplotlib.cm as cm
-from scipy.stats import pearsonr
-import scipy.stats as st
-import parse_data as pdata
 import statistics
-import math
-from sklearn.model_selection import train_test_split
-from sklearn import preprocessing
-from sklearn.tree import DecisionTreeClassifier
+import numpy as np
 import pandas as pd
+from scipy import stats
+import parse_data as pdata
+from sklearn import preprocessing
+from matplotlib import pyplot as plt
+from IPython.display import display,Markdown #,HTML
+from sklearn.model_selection import train_test_split
 
 def display_title(s, pref='Figure', num=1, center=False):
     ctag = 'center' if center else 'p'
